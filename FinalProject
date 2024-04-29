@@ -1,1 +1,75 @@
+class Inventory:
+    def __init__(self):
+        #initialize an empty dictionary to store items
+        self.items = {}
 
+    def add_item(self, item_id, manufacturer, item_type, price, service_date, condition):
+        #add an item to the inventory with provided details
+        self.items[item_id] = {
+            'manufacturer': manufacturer,
+            'item_type': item_type,
+            'price': price,
+            'service_date': service_date,
+            'condition': condition
+        }
+
+    def query_item(self, manufacturer, item_type):
+        #filter items based on manufacturer, item type, condition, and service date
+        valid_items = [(item_id, item_data) for item_id, item_data in self.items.items()
+                       if item_data['manufacturer'].lower() == manufacturer.lower()
+                       and item_data['item_type'].lower() == item_type.lower()
+                       and item_data['condition'] != 'damaged'
+                       and item_data['service_date'] >= "2024-06-06"]
+
+        #no valid items found, print a message and return
+        if not valid_items:
+            print("No such item in inventory")
+            return
+
+        # if more than one valid item found, print a message and return
+        if len(valid_items) > 1:
+            print("More than one item matches your query. Please refine your search.")
+            return
+
+        # retrieve the single valid item
+        item_id, item_data = valid_items[0]
+
+        # print details of the item
+        print(f"Your item is: {item_id}, {item_data['manufacturer']}, {item_data['item_type']}, {item_data['price']}")
+#Find similar items from other manufacturers with prices close to the queried item
+        similar_items = [(other_id, other_data) for other_id, other_data in self.items.items()
+                         if other_id != item_id and other_data['item_type'].lower() == item_type.lower()
+                         and other_data['condition'] != 'damaged'
+                         and other_data['service_date'] >= "2024-06-06"
+                         and abs(float(other_data['price']) - float(item_data['price'])) < 10]
+
+        # similar items found, print their details
+        if similar_items:
+            print("You may also consider:")
+            for other_id, other_data in similar_items:
+                print(f"{other_id}, {other_data['manufacturer']}, {other_data['item_type']}, {other_data['price']}")
+
+
+def main():
+    inventory = Inventory()
+
+    #add example items to the inventory
+    inventory.add_item("1", "Apple", "computer", 1500, "2024-01-01", "good")
+    inventory.add_item("2", "Samsung", "computer", 1600, "2024-01-01", "good")
+    inventory.add_item("3", "Apple", "phone", 1000, "2024-01-01", "good")
+
+    #main loop to repeatedly query the inventory
+    while True:
+        manufacturer = input("Enter the manufacturer: ")
+        item_type = input("Enter the item type: ")
+
+        # check if user wants to quit
+        if manufacturer.lower() == 'q' or item_type.lower() == 'q':
+            break
+
+        #query the inventory with user input
+        inventory.query_item(manufacturer, item_type)
+
+
+if __name__ == "__main__":
+    main()
